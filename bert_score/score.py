@@ -11,9 +11,18 @@ import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from transformers import AutoTokenizer
 
-from .utils import (bert_cos_score_idf, cache_scibert, get_bert_embedding,
-                    get_hash, get_idf_dict, get_model, get_tokenizer,
-                    lang2model, model2layers, sent_encode)
+from .utils import (
+    bert_cos_score_idf,
+    cache_scibert,
+    get_bert_embedding,
+    get_hash,
+    get_idf_dict,
+    get_model,
+    get_tokenizer,
+    lang2model,
+    model2layers,
+    sent_encode,
+)
 
 __all__ = ["score", "plot_example"]
 
@@ -132,10 +141,12 @@ def score(
         all_layers=all_layers,
     ).cpu()
 
+    best_ref_index = []
     if ref_group_boundaries is not None:
         max_preds = []
         for beg, end in ref_group_boundaries:
             max_preds.append(all_preds[beg:end].max(dim=0)[0])
+            best_ref_index.append(all_preds[beg:end].argmax(dim=0))
         all_preds = torch.stack(max_preds, dim=0)
 
     use_custom_baseline = baseline_path is not None
@@ -163,7 +174,8 @@ def score(
                 file=sys.stderr,
             )
 
-    out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2]  # P, R, F
+    # P, R, F, list of index of best reference caption
+    out = all_preds[..., 0], all_preds[..., 1], all_preds[..., 2], best_ref_index
 
     if verbose:
         time_diff = time.perf_counter() - start
