@@ -68,7 +68,7 @@ if __name__ == "__main__":
         else:
             print(f"computing baseline for {model_type} on {args.lang}")
             scorer = bert_score.BERTScorer(model_type=model_type, all_layers=True)
-            with torch.no_grad():
+            with torch.inference_mode():
                 score_means = None
                 count = 0
                 for batches in tqdm(

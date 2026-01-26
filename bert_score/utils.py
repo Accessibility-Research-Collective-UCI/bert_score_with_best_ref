@@ -10,8 +10,16 @@ import torch
 from packaging import version
 from torch.nn.utils.rnn import pad_sequence
 from tqdm.auto import tqdm
-from transformers import (AutoModel, AutoTokenizer, BertConfig, GPT2Tokenizer, RobertaTokenizer,
-                          RobertaConfig, XLMConfig, XLNetConfig)
+from transformers import (
+    AutoModel,
+    AutoTokenizer,
+    BertConfig,
+    GPT2Tokenizer,
+    RobertaTokenizer,
+    RobertaConfig,
+    XLMConfig,
+    XLNetConfig,
+)
 from transformers import __version__ as trans_version
 
 from . import __version__
@@ -190,7 +198,9 @@ def sent_encode(tokenizer, sent):
     sent = sent.strip()
     if sent == "":
         return tokenizer.build_inputs_with_special_tokens([])
-    elif isinstance(tokenizer, GPT2Tokenizer) or isinstance(tokenizer, RobertaTokenizer):
+    elif isinstance(tokenizer, GPT2Tokenizer) or isinstance(
+        tokenizer, RobertaTokenizer
+    ):
         # for RoBERTa and GPT-2
         if version.parse(trans_version) >= version.parse("4.0.0"):
             return tokenizer.encode(
@@ -347,7 +357,7 @@ def padding(arr, pad_token, dtype=torch.long):
 
 def bert_encode(model, x, attention_mask, all_layers=False):
     model.eval()
-    with torch.no_grad():
+    with torch.inference_mode():
         out = model(x, attention_mask=attention_mask, output_hidden_states=all_layers)
     if all_layers:
         emb = torch.stack(out[-1], dim=2)
@@ -450,7 +460,7 @@ def get_bert_embedding(
         batch_size = len(all_sens)
 
     embeddings = []
-    with torch.no_grad():
+    with torch.inference_mode():
         for i in range(0, len(all_sens), batch_size):
             batch_embedding = bert_encode(
                 model,
@@ -649,7 +659,7 @@ def bert_cos_score_idf(
         print("computing greedy matching.")
         iter_range = tqdm(iter_range)
 
-    with torch.no_grad():
+    with torch.inference_mode():
         for batch_start in iter_range:
             batch_refs = refs[batch_start : batch_start + batch_size]
             batch_hyps = hyps[batch_start : batch_start + batch_size]
