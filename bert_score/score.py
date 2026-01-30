@@ -108,7 +108,6 @@ def score(
     if device is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
-    model = model.compile()
 
     if not idf:
         idf_dict = defaultdict(lambda: 1.0)
